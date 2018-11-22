@@ -17,6 +17,16 @@ typedef struct{
 	Time remainBurstT; // how long it can work in current Burst
 }VirtualPCB;
 
+typedef struct{
+	VirtualPCB* pArray;
+	unsigned int arraySize;
+	int methodIndex; // indicate to choose which method to schedule
+}scheduleParamter;
 
+/* choose a process to run by changing it's PCB*/
+void schedule(void *pParameter);
+
+/* do something if it was chosen to run*/
+void processFunction(void *pParameter);
 
 #endif /* SCHEDULE_H_ */
