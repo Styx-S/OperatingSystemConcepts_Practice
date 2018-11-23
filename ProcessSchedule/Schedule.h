@@ -8,9 +8,11 @@
 
 #ifndef SCHEDULE_H_
 #define SCHEDULE_H_
+#define TIME_UNIT 1
 
 typedef unsigned int Time;
 typedef struct{
+	int index; // the process's index
 	int priority;
 	Time arriveT; // when this process arrive
 	Time waitT; // how long this process has waited （all）
@@ -29,9 +31,14 @@ extern sem_t needSchedule, scheduleUp; // all process wait scheduleUp to check t
 	(So it should be define before calling schedule and processFunction)
 
 /* choose a process to run by changing it's PCB*/
-void schedule(void *pParameter);
+void* schedule(void *pParameter);
 
-/* do something if it was chosen to run*/
-void processFunction(void *pParameter);
+/* do something if it was chosen to run
+ * @parameter pParameter is the process's VirtualPCB*/
+void* processFunction(void *pParameter);
+
+
+void initSemaphore();
+
 
 #endif /* SCHEDULE_H_ */
