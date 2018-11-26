@@ -11,12 +11,14 @@
 #include <stdio.h>
 #include "Schedule.h"
 
-sem_t needSchedule, scheduleUp;
+sem_t needSchedule, *choose2run;
 sem_t tmux_setAliveProcess;
 
-void initSemaphore(){
+void initSemaphore(int size){
 	sem_init(&needSchedule, 0, 1);
-	sem_init(&scheduleUp, 0, 0);
+	choose2run = new sem_t[size];
+	for(int i = 0; i < size; i++)
+		sem_init(&choose2run[i], 0, 0);
 	sem_init(&tmux_setAliveProcess, 0, 1);
 }
 /* @return show how long the current burst is
@@ -48,31 +50,19 @@ int getAliveProcess(int setMode = -1){
 void* processFunction(void *pParameter){
 	auto pPCB = (VirtualPCB*) pParameter;
 	while(pPCB->remainWorkloadT > 0){
-		sem_wait(&scheduleUp);
-		if(pPCB->remainBurstT > 0){
-			// it's this process's turn
-			pPCB->remainWorkloadT -= pPCB->remainBurstT; // so burstTime must less than or equal to remainWorkloadT
-			pPCB->remainBurstT = 0;
-			printf("[Process %2d]execute at %u for %u second(s)\n",
-					pPCB->index, getCurrentTime(), getBurstTime());
-			getCurrentTime(getBurstTime());
-			if(pPCB->remainWorkloadT <= 0){
-				getAliveProcess(getAliveProcess()-1);
-				printf("[Process %2d]Finished StillAlive:%2d\n", pPCB->index, getAliveProcess());
-			}
-		}
-		else{
-//			printf("[Process %2d]Wait\n", pPCB->index);
-			pPCB->waitT += getBurstTime();
-		}
-		int i;
-		sem_getvalue(&scheduleUp, &i);
+		// the index start with 1, so need minused 1
+		sem_wait(&choose2run[pPCB->index-1]);
+		// it's this process's turn
+		pPCB->remainWorkloadT -= pPCB->remainBurstT; // so burstTime must less than or equal to remainWorkloadT
+		pPCB->remainBurstT = 0;
+		printf("[Process %2d]execute at %u for %u second(s)\n",
+				pPCB->index, getCurrentTime(), getBurstTime());
 		sleep(getBurstTime());
-		if(i == 0){
-			// all process know this burst's result (and run) we can start next burst
-			sem_post(&needSchedule);
-		}
+		getCurrentTime(getBurstTime());
+		sem_post(&needSchedule);
 	}
+	// this process finished
+	getAliveProcess(getAliveProcess()-1);
 
 }
 // these function will return the process's index which was chosen and burst time \
@@ -126,8 +116,8 @@ void* schedule(void *pParameter){
 		}
 		if(result.index >= 0){
 			// make the process's serial number start with 1
-			printf("[Scheduler]choose %d process for %u second(s)\n",
-					pScheduleParameter->pArray[result.index].index, result.burstT);
+			printf("[Scheduler]choose %d process for %u second(s) (has waited %u s)\n",
+					pScheduleParameter->pArray[result.index].index, result.burstT, pScheduleParameter->pArray[result.index].waitT);
 			getBurstTime(result.burstT);
 		}
 		else{
@@ -135,6 +125,8 @@ void* schedule(void *pParameter){
 			if(getAliveProcess() != 0){
 				getCurrentTime(TIME_UNIT);
 				getBurstTime(TIME_UNIT);
+				sem_post(&needSchedule);
+				continue;
 			}
 			else{
 				printf("End\n");
@@ -142,9 +134,20 @@ void* schedule(void *pParameter){
 				break;
 			}
 		}
-		int showPCBsList(VirtualPCB* pPCBList, int size);
-		//showPCBsList(pScheduleParameter->pArray, 20);
-		for(int i = 0; i < getAliveProcess(); i++)
-			sem_post(&scheduleUp);
+		// set others' wait time
+		for(int i = 0; i < pScheduleParameter->arraySize; i++){
+			if(i != result.index){
+				auto pCurrent = &pScheduleParameter->pArray[i];
+				if(pCurrent->arriveT > getCurrentTime()+getBurstTime())
+					continue;
+				else if(pCurrent->arriveT < getCurrentTime()){
+					pCurrent->waitT += getBurstTime();
+				}
+				else{
+					pCurrent->waitT += getBurstTime() - (pCurrent->arriveT - getCurrentTime());
+				}
+			}
+		}
+		sem_post(&choose2run[result.index]);
 	}
 }

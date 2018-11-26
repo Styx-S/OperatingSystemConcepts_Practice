@@ -32,7 +32,8 @@ int initPCBList(VirtualPCB* pPCBList, int size, int maxArriveTime = 20, int maxW
 
 
 int main(int argc, char* argv[]){
-	initSemaphore();
+	const int SIZE = 20;
+	initSemaphore(SIZE);
 	int method = 0;
 	if(argc == 2){
 		if(strcmp(argv[1], "RR"))
@@ -40,7 +41,6 @@ int main(int argc, char* argv[]){
 		else if(strcmp(argv[1], "SJF"))
 			method = 2;
 	}
-	const int SIZE = 20;
 	VirtualPCB list[SIZE];
 	initPCBList(list, SIZE);
 	pthread_t scheduler, ptt[SIZE];

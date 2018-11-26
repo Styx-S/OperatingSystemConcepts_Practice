@@ -38,7 +38,7 @@ void* schedule(void *pParameter);
 void* processFunction(void *pParameter);
 
 
-void initSemaphore();
+void initSemaphore(int size);
 
 
 #endif /* SCHEDULE_H_ */
