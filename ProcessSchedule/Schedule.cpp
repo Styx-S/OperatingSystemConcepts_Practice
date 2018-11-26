@@ -93,7 +93,34 @@ scheduleResult handleRR(VirtualPCB *pList, unsigned int size){
 
 }
 scheduleResult handleSJF(VirtualPCB *pList, unsigned int size){
-
+	scheduleResult result;
+	// find the highest priority
+	int high = -1, nums = 0;
+	for(int i = 0; i < size; i++){
+		if(pList[i].arriveT <= getCurrentTime() && pList[i].remainWorkloadT > 0){
+			if(pList[i].priority > high){
+				high = pList[i].priority;
+				nums = 1;
+			}
+			else if(pList[i].priority == high)
+				nums++;
+		}
+	}
+	if(high == -1)
+		return result;
+	VirtualPCB* priorityList = new VirtualPCB[nums];
+	// copy
+	for(int i = 0, j = 0; i < size; i++){
+		if(pList[i].arriveT <= getCurrentTime() && pList[i].priority == high && pList[i].remainWorkloadT > 0){
+			priorityList[j++] = pList[i];
+		}
+	}
+	result = handleFCFS(priorityList, nums);
+	result.index = priorityList[result.index].index - 1;
+	// write back the remainBurstT
+	pList[result.index].remainBurstT = result.burstT;
+	delete[] priorityList;
+	return result;
 }
 
 void* schedule(void *pParameter){
@@ -105,10 +132,10 @@ void* schedule(void *pParameter){
 		scheduleResult result;
 		switch(pScheduleParameter->methodIndex){
 		case 1:
-			result = handleSJF(pScheduleParameter->pArray, pScheduleParameter->arraySize);
+			result = handleRR(pScheduleParameter->pArray, pScheduleParameter->arraySize);
 			break;
 		case 2:
-			result = handleRR(pScheduleParameter->pArray, pScheduleParameter->arraySize);
+			result = handleSJF(pScheduleParameter->pArray, pScheduleParameter->arraySize);
 			break;
 		default:
 			result = handleFCFS(pScheduleParameter->pArray, pScheduleParameter->arraySize);

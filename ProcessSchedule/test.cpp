@@ -34,12 +34,20 @@ int initPCBList(VirtualPCB* pPCBList, int size, int maxArriveTime = 20, int maxW
 int main(int argc, char* argv[]){
 	const int SIZE = 20;
 	initSemaphore(SIZE);
-	int method = 0;
+	int method;
 	if(argc == 2){
-		if(strcmp(argv[1], "RR"))
+		if(strcmp(argv[1], "RR") == 0){
 			method = 1;
-		else if(strcmp(argv[1], "SJF"))
+			printf("Using RR\n");
+		}
+		else if(strcmp(argv[1], "SJF") == 0){
 			method = 2;
+			printf("Using SJF\n");
+		}
+		else{
+			method = 0;
+			printf("Using FCFS\n");
+		}
 	}
 	VirtualPCB list[SIZE];
 	initPCBList(list, SIZE);
