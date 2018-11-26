@@ -90,9 +90,13 @@ scheduleResult handleFCFS(VirtualPCB *pList, unsigned int size){
 	return result;
 }
 scheduleResult handleRR(VirtualPCB *pList, unsigned int size){
+	scheduleResult result;
 
 }
 scheduleResult handleSJF(VirtualPCB *pList, unsigned int size){
+
+}
+scheduleResult handlePriority(VirtualPCB *pList, unsigned int size){
 	scheduleResult result;
 	// find the highest priority
 	int high = -1, nums = 0;
