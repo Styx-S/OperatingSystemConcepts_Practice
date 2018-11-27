@@ -91,10 +91,37 @@ scheduleResult handleFCFS(VirtualPCB *pList, unsigned int size){
 }
 scheduleResult handleRR(VirtualPCB *pList, unsigned int size){
 	scheduleResult result;
-
+	Time firstArrive = UINT_MAX;
+		for(unsigned int i = 0; i < size; i++){
+			if(pList[i].arriveT <= getCurrentTime() &&pList[i].remainWorkloadT > 0 && pList[i].arriveT < firstArrive){
+				firstArrive = pList[i].arriveT;
+				result.index = i;
+			}
+		}
+		// each process executes only once
+		if(result.index != -1){
+			result.burstT = TIME_UNIT;
+			// give the process burst time
+			pList[result.index].remainBurstT = result.burstT;
+		}
+		return result;
 }
 scheduleResult handleSJF(VirtualPCB *pList, unsigned int size){
-
+	scheduleResult result;
+	Time shortestWorlkload = UINT_MAX;
+		for(unsigned int i = 0; i < size; i++){
+			if(pList[i].arriveT <= getCurrentTime() &&pList[i].remainWorkloadT > 0 && pList[i].remainWorkloadT < shortestWorlkload){
+				shortestWorlkload = pList[i].remainWorkloadT;
+				result.index = i;
+			}
+		}
+		// each process executes only once
+		if(result.index != -1){
+			result.burstT = pList[result.index].remainWorkloadT;
+			// give the process burst time
+			pList[result.index].remainBurstT = result.burstT;
+		}
+		return result;
 }
 scheduleResult handlePriority(VirtualPCB *pList, unsigned int size){
 	scheduleResult result;
@@ -140,6 +167,9 @@ void* schedule(void *pParameter){
 			break;
 		case 2:
 			result = handleSJF(pScheduleParameter->pArray, pScheduleParameter->arraySize);
+			break;
+		case 3:
+			result = handlePriority(pScheduleParameter->pArray, pScheduleParameter->arraySize);
 			break;
 		default:
 			result = handleFCFS(pScheduleParameter->pArray, pScheduleParameter->arraySize);

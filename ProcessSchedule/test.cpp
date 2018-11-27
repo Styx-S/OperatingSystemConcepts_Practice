@@ -44,6 +44,10 @@ int main(int argc, char* argv[]){
 			method = 2;
 			printf("Using SJF\n");
 		}
+		else if(strcmp(argv[1], "priority") == 0){
+			method = 3;
+			printf("Using Priority\n");
+		}
 		else{
 			method = 0;
 			printf("Using FCFS\n");
