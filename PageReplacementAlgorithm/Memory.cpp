@@ -142,30 +142,27 @@ void* LRUMemory::requestPage(int logicPageIndex){
 }
 void LRUMemory::processPageFault(int logicPageIndex){
 	int j;
-	if(count < m_size-1){
-		count++;
+	int p2index;
+	if(count < m_size){
 		j = count;
-		m_size++;
 		for(int i = 0; i < m_size; i++){
 			if(m_frameList[i].logicPageIndex == -1){
 				m_frameList[i].logicPageIndex = logicPageIndex;
-				logicPageIndex = i;
+				p2index = i;
 				break;
 			}
 		}
-		printf("true\n");
+		count++;
 	}
 	else{
-		printf("false0\n");
 		j = m_size-1;
-		m_frameList[leastRecentlyUsed[m_size-1]].logicPageIndex = -1;
-		printf("false1\n");
+		p2index = leastRecentlyUsed[m_size-1];
+		m_frameList[p2index].logicPageIndex = logicPageIndex;
 	}
 	for(int i = j; i > 0; i--){
 		leastRecentlyUsed[i] = leastRecentlyUsed[i-1];
 	}
-	leastRecentlyUsed[0] = logicPageIndex;
-	printf("true3\n");
+	leastRecentlyUsed[0] = p2index;
 }
 
 void* CLOCKMemory::requestPage(int logicPageIndex){

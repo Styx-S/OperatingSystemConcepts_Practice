@@ -10,6 +10,7 @@
 #include <fstream>
 #include <cstdio>
 #include <limits.h>
+#include <cstdio>
 
 #define PATH "workload/workload%d"
 
@@ -35,28 +36,30 @@ double requestPages(Memory *pMemory, int workloadIndex){
 int main(){
 	const int frameNums[] = {100, 500, 1000, 2000, 5000};
 	const int workloads[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-
+	const int FRAMENUMS = sizeof(frameNums)/sizeof(int);
+	const int WORKLOADNUMS = sizeof(workloads)/sizeof(int);
 	Memory *pMemory[3];
+	double result[FRAMENUMS * WORKLOADNUMS * 3];
 	for(size_t i = 0; i < sizeof(frameNums)/sizeof(int); i++){
-		printf("%ld\n",i);
+		printf("-------------\n");
+		printf("FrameSize:%d\n",frameNums[i]);
 		int size = frameNums[i];
 		pMemory[0] = new FIFOMemory(size);
 		pMemory[1] = new LRUMemory(size);
 		pMemory[2] = new CLOCKMemory(size);
 		for(size_t j = 0; j < sizeof(workloads)/sizeof(int); j++){
-			printf("%d\n",j);
+			printf("Workload:%d\n",workloads[j]);
 			for(size_t ini = 0; ini < 3; ini++){
 
 				int workloadindex = workloads[j];
 				pMemory[ini]->init();
-				if(ini == 1)continue;
+				//if(ini != 1)continue;
 				double rate = requestPages(pMemory[ini], workloadindex);
-				printf("%ld-%ld:%lf\n", i,j,rate);
+				printf("%1.d:%lf\n", (int)ini+1,rate);
+				result[ini + j * WORKLOADNUMS + i * FRAMENUMS] = rate;
 			}
 		}
 		for(int del = 0; del < 3; del++){
-			printf("%d\n",del);
-			fflush(stdin);
 			delete pMemory[del];
 		}
 	}
