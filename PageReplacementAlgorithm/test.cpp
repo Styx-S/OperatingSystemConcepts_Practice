@@ -73,7 +73,7 @@ int main(){
 				//if(ini != 1)continue;
 				double rate = requestPages(pMemory[ini], workloadindex);
 				printf("%1.d:%lf\n", (int)ini+1,rate);
-				result[ini + j * WORKLOADNUMS + i * FRAMENUMS] = rate;
+				result[ini + i * 3 * WORKLOADNUMS + j * 3] = rate;
 			}
 		}
 		for(int del = 0; del < 3; del++){
