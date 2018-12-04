@@ -13,7 +13,7 @@
 #include <cstdio>
 
 #define PATH "workload/workload%d"
-
+#define PATH_RESULT "result/result.csv"
 
 
 
@@ -31,6 +31,23 @@ double requestPages(Memory *pMemory, int workloadIndex){
 	}
 	return pMemory->reportPageFaultRate();
 
+}
+void writeResult(double* rateList, int row, int column, int kind){
+	const int INTERVAL_FRAME = kind * column;
+	FILE* fp = fopen(PATH_RESULT, "w");
+	if(fp == NULL)
+		return;
+	for(int i = 0; i < kind; i++){
+		for(int j = 0; j < row; j++){
+			for(int k = 0; k < column; k++){
+				fprintf(fp, "%lf", rateList[i + j * INTERVAL_FRAME + k * kind]);
+				if(k != column-1)
+					fprintf(fp, ",");
+			}
+			fprintf(fp, "\n");
+		}
+	}
+	fclose(fp);
 }
 
 int main(){
@@ -63,7 +80,7 @@ int main(){
 			delete pMemory[del];
 		}
 	}
-
+	writeResult(result, FRAMENUMS, WORKLOADNUMS, 3);
 }
 
 
